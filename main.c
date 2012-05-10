@@ -96,85 +96,85 @@ static int read_manifest_file(bbami_info_ptr info, const char * filename) {
 
         /* Chomp */
         while (NULL != (column = strrchr(line, '\n'))) {
-        	*column = '\0';
+            *column = '\0';
         }
         /* Find key-value delimiter */
         column = strchr(line, ':');
         if(0 == column) /* not found a key-value delimiter*/
-        	continue;
+            continue;
 
         int i;
-		int attr_id = -1; /* Lookup attribute key */
-		*column++ = 0; /* replace ':' into '\0' and advance */
+        int attr_id = -1; /* Lookup attribute key */
+        *column++ = 0; /* replace ':' into '\0' and advance */
 
-		/* Find attribute Id by attribute name */
-		/* TODO: implement using hash */
-		for(i = 0; i < NUM_ATTRIBUTES; ++i) {
-			if(0 == strcmp(attr_names[i].attr_name, attr_name)) {
-				attr_id = i;
-				break;
-			}
-		}
+        /* Find attribute Id by attribute name */
+        /* TODO: implement using hash */
+        for(i = 0; i < NUM_ATTRIBUTES; ++i) {
+            if(0 == strcmp(attr_names[i].attr_name, attr_name)) {
+                attr_id = i;
+                break;
+            }
+        }
 
-		if(attr_id < 0) /* Attribute key was not found */
-			continue;
+        if(attr_id < 0) /* Attribute key was not found */
+            continue;
 
-		if(0 == *column++) /* empty value - skip */
-			continue;
+        if(0 == *column++) /* empty value - skip */
+            continue;
 
-		char * tmp;
-		size_t sz;
-		struct hash_entry * entry = &info->table[attr_id];
-		value = column;
+        char * tmp;
+        size_t sz;
+        struct hash_entry * entry = &info->table[attr_id];
+        value = column;
 
-		switch(entry->count) {
-		case 0:
-			entry->count++;
-			entry->value.item = strdup(value);
-			if(entry->value.item == 0) {
-				fclose(f);
-				return -errno;
-			}
-			break;
-		case 1:
-			entry->count++; /* becomes 2 */
-			tmp = entry->value.item; /* save old single value */
-			/* allocate enough room for 2 items */
-			sz = sizeof(char*) * entry->count;
-			entry->value.item_list = realloc(0, sz);
-			if(entry->value.item_list == 0) {
-				fclose(f);
-				return -errno;
-			}
-			entry->value.item_list[0] = tmp; /* restore old item */
-			entry->value.item_list[1] = strdup(value); /* make a copy of the new one */
-			if(entry->value.item_list == 0) {
-				fclose(f);
-				return -errno;
-			}
-			break;
-		default: /* becomes greater than 2*/
-			entry->count++;
-			/* how much memory for the new list of values */
-			sz = sizeof(char**) * entry->count;
-			/* allocate memory for the new list */
-			/* need to use tmp variable because allocation may fail */
-			tmp = realloc(entry->value.item_list, sz);
-			if(tmp == 0) { /* allocation failed */
-				fclose(f);
-				return -errno;
-			} else {
-				/* succeeded - use tmp variable */
-				entry->value.item_list = (char**)tmp;
-			}
-			/* copy value itself */
-			entry->value.item_list[entry->count - 1] = strdup(value);
-			if(entry->value.item_list[entry->count - 1] == 0) {
-				fclose(f);
-				return -errno;
-			}
-			break;
-		} /* switch */
+        switch(entry->count) {
+        case 0:
+            entry->count++;
+            entry->value.item = strdup(value);
+            if(entry->value.item == 0) {
+                fclose(f);
+                return -errno;
+            }
+            break;
+        case 1:
+            entry->count++; /* becomes 2 */
+            tmp = entry->value.item; /* save old single value */
+            /* allocate enough room for 2 items */
+            sz = sizeof(char*) * entry->count;
+            entry->value.item_list = realloc(0, sz);
+            if(entry->value.item_list == 0) {
+                fclose(f);
+                return -errno;
+            }
+            entry->value.item_list[0] = tmp; /* restore old item */
+            entry->value.item_list[1] = strdup(value); /* make a copy of the new one */
+            if(entry->value.item_list == 0) {
+                fclose(f);
+                return -errno;
+            }
+            break;
+        default: /* becomes greater than 2*/
+            entry->count++;
+            /* how much memory for the new list of values */
+            sz = sizeof(char**) * entry->count;
+            /* allocate memory for the new list */
+            /* need to use tmp variable because allocation may fail */
+            tmp = realloc(entry->value.item_list, sz);
+            if(tmp == 0) { /* allocation failed */
+                fclose(f);
+                return -errno;
+            } else {
+                /* succeeded - use tmp variable */
+                entry->value.item_list = (char**)tmp;
+            }
+            /* copy value itself */
+            entry->value.item_list[entry->count - 1] = strdup(value);
+            if(entry->value.item_list[entry->count - 1] == 0) {
+                fclose(f);
+                return -errno;
+            }
+            break;
+        } /* switch */
     }
 
     fclose(f);
