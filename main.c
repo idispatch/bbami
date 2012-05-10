@@ -9,40 +9,40 @@
 static const struct attr_name {
     const char * attr_name;
 } attr_names[] = {
-    [AUTHOR] = { .attr_name = "Author" },
-    [ARCHIVE_CREATED_BY] = { .attr_name = "Archive-Created-By" },
-    [ARCHIVE_MANIFEST_VERSION] = { .attr_name = "Archive-Manifest-Version" },
+    [BBAMI_AUTHOR] = { .attr_name = "Author" },
+    [BBAMI_ARCHIVE_CREATED_BY] = { .attr_name = "Archive-Created-By" },
+    [BBAMI_ARCHIVE_MANIFEST_VERSION] = { .attr_name = "Archive-Manifest-Version" },
 
-    [APPLICATION_NAME] = { .attr_name = "Application-Name" },
-    [APPLICATION_DESCRIPTION] = { .attr_name = "Application-Description" },
-    [APPLICATION_CATEGORY] = { .attr_name = "Application-Category" },
-    [APPLICATION_VERSION] = { .attr_name = "Application-Version" },
-    [APPLICATION_ID] = { .attr_name = "Application-Id" },
-    [APPLICATION_VERSION_ID] = { .attr_name = "Application-Version-Id" },
-    [APPLICATION_DEVELOPMENT_MODE] = { .attr_name = "Application-Development-Mode" },
-    [APPLICATION_REQUIRES_SYSTEM] = { .attr_name = "Application-Requires-System" },
+    [BBAMI_APPLICATION_NAME] = { .attr_name = "Application-Name" },
+    [BBAMI_APPLICATION_DESCRIPTION] = { .attr_name = "Application-Description" },
+    [BBAMI_APPLICATION_CATEGORY] = { .attr_name = "Application-Category" },
+    [BBAMI_APPLICATION_VERSION] = { .attr_name = "Application-Version" },
+    [BBAMI_APPLICATION_ID] = { .attr_name = "Application-Id" },
+    [BBAMI_APPLICATION_VERSION_ID] = { .attr_name = "Application-Version-Id" },
+    [BBAMI_APPLICATION_DEVELOPMENT_MODE] = { .attr_name = "Application-Development-Mode" },
+    [BBAMI_APPLICATION_REQUIRES_SYSTEM] = { .attr_name = "Application-Requires-System" },
 
-    [PACKAGE_TYPE] = { .attr_name = "Package-Type" },
-    [PACKAGE_AUTHOR] = { .attr_name = "Package-Author" },
-    [PACKAGE_NAME] = { .attr_name = "Package-Name" },
-    [PACKAGE_VERSION] = { .attr_name = "Package-Version" },
-    [PACKAGE_ARCHITECTURE] = { .attr_name = "Package-Architecture" },
-    [PACKAGE_AUTHOR_CERTIFICATE_HASH] = { .attr_name = "Package-Author-Certificate-Hash" },
-    [PACKAGE_AUTHOR_ID] = { .attr_name = "Package-Author-Id" },
-    [PACKAGE_ID] = { .attr_name = "Package-Id" },
-    [PACKAGE_VERSION_ID] = { .attr_name = "Package-Version-Id" },
+    [BBAMI_PACKAGE_TYPE] = { .attr_name = "Package-Type" },
+    [BBAMI_PACKAGE_AUTHOR] = { .attr_name = "Package-Author" },
+    [BBAMI_PACKAGE_NAME] = { .attr_name = "Package-Name" },
+    [BBAMI_PACKAGE_VERSION] = { .attr_name = "Package-Version" },
+    [BBAMI_PACKAGE_ARCHITECTURE] = { .attr_name = "Package-Architecture" },
+    [BBAMI_PACKAGE_AUTHOR_CERTIFICATE_HASH] = { .attr_name = "Package-Author-Certificate-Hash" },
+    [BBAMI_PACKAGE_AUTHOR_ID] = { .attr_name = "Package-Author-Id" },
+    [BBAMI_PACKAGE_ID] = { .attr_name = "Package-Id" },
+    [BBAMI_PACKAGE_VERSION_ID] = { .attr_name = "Package-Version-Id" },
 
-    [ENTRY_POINT] = { .attr_name = "Entry-Point" },
-    [ENTRY_POINT_NAME] = { .attr_name = "Entry-Point-Name" },
-    [ENTRY_POINT_TYPE] = { .attr_name = "Entry-Point-Type" },
-    [ENTRY_POINT_ICON] = { .attr_name = "Entry-Point-Icon" },
-    [ENTRY_POINT_SPLASH_SCREEN] = { .attr_name = "Entry-Point-Splash-Screen" },
-    [ENTRY_POINT_ORIENTATION] = { .attr_name = "Entry-Point-Orientation" },
-    [ENTRY_POINT_USER_ACTIONS] = { .attr_name = "Entry-Point-User-Actions" },
-    [ENTRY_POINT_SYSTEM_ACTIONS] = { .attr_name = "Entry-Point-System-Actions" },
+    [BBAMI_ENTRY_POINT] = { .attr_name = "Entry-Point" },
+    [BBAMI_ENTRY_POINT_NAME] = { .attr_name = "Entry-Point-Name" },
+    [BBAMI_ENTRY_POINT_TYPE] = { .attr_name = "Entry-Point-Type" },
+    [BBAMI_ENTRY_POINT_ICON] = { .attr_name = "Entry-Point-Icon" },
+    [BBAMI_ENTRY_POINT_SPLASH_SCREEN] = { .attr_name = "Entry-Point-Splash-Screen" },
+    [BBAMI_ENTRY_POINT_ORIENTATION] = { .attr_name = "Entry-Point-Orientation" },
+    [BBAMI_ENTRY_POINT_USER_ACTIONS] = { .attr_name = "Entry-Point-User-Actions" },
+    [BBAMI_ENTRY_POINT_SYSTEM_ACTIONS] = { .attr_name = "Entry-Point-System-Actions" },
 
-    [ARCHIVE_ASSET_NAME] = { .attr_name = "Archive-Asset-Name" },
-    [ARCHIVE_ASSET_SHA_512_DIGEST] = { .attr_name = "Archive-Asset-SHA-512-Digest" },
+    [BBAMI_ARCHIVE_ASSET_NAME] = { .attr_name = "Archive-Asset-Name" },
+    [BBAMI_ARCHIVE_ASSET_SHA_512_DIGEST] = { .attr_name = "Archive-Asset-SHA-512-Digest" },
 };
 
 #define NUM_ATTRIBUTES (sizeof(attr_names)/sizeof(attr_names[0]))
@@ -92,76 +92,89 @@ static int read_manifest_file(bbami_info_ptr info, const char * filename) {
     while((line = fgets(buffer, sizeof(buffer), f)) > 0) {
         char * attr_name = line;
         char * value;
-        char * column = strchr(line, ':');
-        if(column) { /* Found a key: value */
-            int i;
-            int attr_id = -1; /* Lookup attribute key */
-            for(i = 0; i < NUM_ATTRIBUTES; ++i) {
-                if(0 == strcmp(attr_names[i].attr_name, attr_name)) {
-                    attr_id = i;
-                    break;
-                }
-            }
-            if(attr_id >= 0) { /* Attribute key was found */
-                *column++ = 0; /* replace ':' into '\0' and advance */
-                if(*column++) {/* non-empty value - skip leading space */
-                    char * tmp;
-                    size_t sz;
+        char * column;
 
-                    struct hash_entry * entry = &info->table[attr_id];
-                    value = column;
-
-                    switch(entry->count) {
-                    case 0:
-                        entry->count++;
-                        entry->value.item = strdup(value);
-                        if(entry->value.item == 0) {
-                            fclose(f);
-                            return -errno;
-                        }
-                        break;
-                    case 1:
-                        entry->count++; /* becomes 2 */
-                        tmp = entry->value.item; /* save old single value */
-                        /* allocate enough room for 2 items */
-                        sz = sizeof(char*) * entry->count;
-                        entry->value.item_list = realloc(0, sz);
-                        if(entry->value.item_list == 0) {
-                            fclose(f);
-                            return -errno;
-                        }
-                        entry->value.item_list[0] = tmp; /* restore old item */
-                        entry->value.item_list[1] = strdup(value); /* make a copy of the new one */
-                        if(entry->value.item_list == 0) {
-                            fclose(f);
-                            return -errno;
-                        }
-                        break;
-                    default: /* becomes greater than 2*/
-                        entry->count++;
-                        /* how much memory for the new list of values */
-                        sz = sizeof(char**) * entry->count;
-                        /* allocate memory for the new list */
-                        /* need to use tmp variable because allocation may fail */
-                        tmp = realloc(entry->value.item_list, sz);
-                        if(tmp == 0) { /* allocation failed */
-                            fclose(f);
-                            return -errno;
-                        } else {
-                            /* succeeded - use tmp variable */
-                            entry->value.item_list = (char**)tmp;
-                        }
-                        /* copy value itself */
-                        entry->value.item_list[entry->count - 1] = strdup(value);
-                        if(entry->value.item_list[entry->count - 1] == 0) {
-                            fclose(f);
-                            return -errno;
-                        }
-                        break;
-                    } /* switch */
-                } /* else the value is empty */
-            } /* did not find attribute by name - skip */
+        /* Chomp */
+        while (NULL != (column = strrchr(line, '\n'))) {
+        	*column = '\0';
         }
+        /* Find key-value delimiter */
+        column = strchr(line, ':');
+        if(0 == column) /* not found a key-value delimiter*/
+        	continue;
+
+        int i;
+		int attr_id = -1; /* Lookup attribute key */
+		*column++ = 0; /* replace ':' into '\0' and advance */
+
+		/* Find attribute Id by attribute name */
+		/* TODO: implement using hash */
+		for(i = 0; i < NUM_ATTRIBUTES; ++i) {
+			if(0 == strcmp(attr_names[i].attr_name, attr_name)) {
+				attr_id = i;
+				break;
+			}
+		}
+
+		if(attr_id < 0) /* Attribute key was not found */
+			continue;
+
+		if(0 == *column++) /* empty value - skip */
+			continue;
+
+		char * tmp;
+		size_t sz;
+		struct hash_entry * entry = &info->table[attr_id];
+		value = column;
+
+		switch(entry->count) {
+		case 0:
+			entry->count++;
+			entry->value.item = strdup(value);
+			if(entry->value.item == 0) {
+				fclose(f);
+				return -errno;
+			}
+			break;
+		case 1:
+			entry->count++; /* becomes 2 */
+			tmp = entry->value.item; /* save old single value */
+			/* allocate enough room for 2 items */
+			sz = sizeof(char*) * entry->count;
+			entry->value.item_list = realloc(0, sz);
+			if(entry->value.item_list == 0) {
+				fclose(f);
+				return -errno;
+			}
+			entry->value.item_list[0] = tmp; /* restore old item */
+			entry->value.item_list[1] = strdup(value); /* make a copy of the new one */
+			if(entry->value.item_list == 0) {
+				fclose(f);
+				return -errno;
+			}
+			break;
+		default: /* becomes greater than 2*/
+			entry->count++;
+			/* how much memory for the new list of values */
+			sz = sizeof(char**) * entry->count;
+			/* allocate memory for the new list */
+			/* need to use tmp variable because allocation may fail */
+			tmp = realloc(entry->value.item_list, sz);
+			if(tmp == 0) { /* allocation failed */
+				fclose(f);
+				return -errno;
+			} else {
+				/* succeeded - use tmp variable */
+				entry->value.item_list = (char**)tmp;
+			}
+			/* copy value itself */
+			entry->value.item_list[entry->count - 1] = strdup(value);
+			if(entry->value.item_list[entry->count - 1] == 0) {
+				fclose(f);
+				return -errno;
+			}
+			break;
+		} /* switch */
     }
 
     fclose(f);
@@ -201,7 +214,7 @@ int bbami_init(int api_version,
     } else {
         /* Find manifest file path */
         const char * home_path = getenv("HOME");
-        /* HOME / + MANIFEST + / + MANIFEST.MF */
+        /* HOME + /../app/META-INF/MANIFEST.MF */
         size_t sz = strlen(home_path) + 30;
         ptr->manifest_path = calloc(1, sz);
         if(ptr->manifest_path == 0) {
@@ -209,9 +222,9 @@ int bbami_init(int api_version,
         }
         snprintf(ptr->manifest_path,
                 sz,
-                "%s/%s/%s",
+                "%s/../app/%s/%s",
                 home_path,
-                "MANIFEST",
+                "META-INF",
                 "MANIFEST.MF");
     }
 
