@@ -128,7 +128,6 @@ static int read_manifest_file(bbami_info_ptr info, const char * filename) {
         if(attr_id < 0) /* Attribute key was not found */
             continue;
 #endif
-
         if(0 == *column++) /* empty value - skip */
             continue;
 
