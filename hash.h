@@ -1,3 +1,6 @@
+#ifndef __hash_table_definition_included__
+#define __hash_table_definition_included__
+
 static const unsigned attr_hash_table[] = {
     ~0,
     ~0,
@@ -64,7 +67,7 @@ static const unsigned attr_hash_table[] = {
     BBAMI_PACKAGE_ID                      , /* 62      Package-Id */
     ~0,
     ~0,
-    ~0,
+    BBAMI_ARCHIVE_ASSET_TYPE              , /* 65      Archive-Asset-Type */
     BBAMI_ENTRY_POINT_ORIENTATION         , /* 66      Entry-Point-Orientation */
     ~0,
     BBAMI_ARCHIVE_CREATED_BY              , /* 68      Archive-Created-By */
@@ -113,11 +116,14 @@ static int hash_lookup(const char * str, bbami_attribute_id * attribute_id) {
     if(!*str)
         return ENOENT;
     unsigned hash = hash_str(str);
-    if (hash != ~0 && 
+    if (hash < HASH_TABLE_SIZE &&       /* hash value must not exceed table size */
+        ~0 != attr_hash_table[hash] &&  /* hash value must map to the defined value */
         0 == strcmp(str, attr_names[attr_hash_table[hash]])) {
         *attribute_id = (bbami_attribute_id)attr_hash_table[hash];
         return EOK;
     }
     return ENOENT;
 }
+
+#endif /* __hash_table_definition_included__ */
 

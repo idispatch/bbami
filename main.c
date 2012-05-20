@@ -41,6 +41,7 @@ static const char * attr_names[] = {
     [BBAMI_ENTRY_POINT_SYSTEM_ACTIONS] = "Entry-Point-System-Actions",
 
     [BBAMI_ARCHIVE_ASSET_NAME] = "Archive-Asset-Name",
+    [BBAMI_ARCHIVE_ASSET_TYPE] = "Archive-Asset-Type",
     [BBAMI_ARCHIVE_ASSET_SHA_512_DIGEST] = "Archive-Asset-SHA-512-Digest",
 };
 
@@ -114,7 +115,6 @@ static int read_manifest_file(bbami_info_ptr info, const char * filename) {
         /* Hash table lookup: attribute Id by attribute name */
         if(0 != hash_lookup(attr_name, (bbami_attribute_id*)&attr_id))
             continue; /* Attribute key was not found */
-
 #else
         /* Linear search: attribute Id by attribute name */
         int i;

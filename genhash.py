@@ -318,6 +318,9 @@ with open(sys.argv[1]) as f:
         hash = fn(h[i]) % table_size
         table[hash] = i
     
+    print("#ifndef __hash_table_definition_included__")
+    print("#define __hash_table_definition_included__")
+    print("")
     print("static const unsigned attr_hash_table[] = {")
     for i in range(table_size):
         if i in table:
@@ -341,11 +344,14 @@ static int hash_lookup(const char * str, bbami_attribute_id * attribute_id) {
     if(!*str)
         return ENOENT;
     unsigned hash = hash_str(str);
-    if (hash != ~0 && 
+    if (hash < HASH_TABLE_SIZE &&       /* hash value must not exceed table size */
+        ~0 != attr_hash_table[hash] &&  /* hash value must map to the defined value */
         0 == strcmp(str, attr_names[attr_hash_table[hash]])) {
         *attribute_id = (bbami_attribute_id)attr_hash_table[hash];
         return EOK;
     }
     return ENOENT;
 }
+
+#endif /* __hash_table_definition_included__ */
 """)
