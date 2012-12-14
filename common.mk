@@ -14,6 +14,7 @@ endef
 USEFILE=
 
 EXTRA_INCVPATH +=$(PROJECT_ROOT)/public
+CCFLAGS += -D__BLACKBERRY__
 
 include $(MKFILES_ROOT)/qmacros.mk
 ifndef QNX_INTERNAL

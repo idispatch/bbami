@@ -275,7 +275,9 @@ hash_functions = {
 """
 }
 
+# main.c as input
 if len(sys.argv) < 2:
+    sys.stderr.write("Invalid parameter count.\n")
     sys.exit(-1)
 
 with open(sys.argv[1]) as f:
