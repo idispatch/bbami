@@ -12,7 +12,7 @@ PINFO DESCRIPTION = BlackBerry Application Meta Information Library
 endef
 
 USEFILE=
-
+NAME=bbami
 EXTRA_INCVPATH +=$(PROJECT_ROOT)/public
 CCFLAGS += -D__BLACKBERRY__ -D__QNXNTO__
 
